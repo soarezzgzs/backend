@@ -8,5 +8,13 @@ export default {
     migrations: {
       directory: './src/database/migrations'
     }
+  },
+
+  production: {
+    client: process.env.DB_CLIENT || 'pg',
+    connection: process.env.DATABASE_URL,
+    migrations: {
+      directory: './src/database/migrations'
+    }
   }
 };
