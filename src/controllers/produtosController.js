@@ -29,25 +29,35 @@ class ProdutosController {
   }
 
   async create(request, response) {
-    const { nome, artista, preco } = request.body;
+  const { nome, artista, preco } = request.body;
 
-    if (!nome || !artista || !preco) {
-      return response.status(400).json({ error: 'Todos os campos são obrigatórios' });
-    }
-
-    if (preco < 0) {
-      return response.status(400).json({ error: 'O preço não pode ser negativo' });
-    }
-
-    const [id] = await connection('produtos').insert({
-      nome,
-      artista,
-      preco,
-      user_id: request.userId
-    });
-
-    return response.json({ id });
+  if (!nome || !artista || !preco) {
+    return response.status(400).json({ error: 'Todos os campos são obrigatórios' });
   }
+
+  if (preco < 0) {
+    return response.status(400).json({ error: 'O preço não pode ser negativo' });
+  }
+
+  try {
+    const newProdutos = await connection('produtos')
+      .insert({
+        nome,
+        artista,
+        preco,
+        user_id: request.userId
+      })
+      .returning(['id', 'nome', 'artista', 'preco', 'user_id']);
+
+    const produto = newProdutos[0]; // pega o primeiro objeto retornado
+
+    return response.status(201).json(produto);
+  } catch (err) {
+    console.error('Erro ao criar produto:', err);
+    return response.status(500).json({ error: 'Erro ao criar produto', detalhe: err.message });
+  }
+}
+
 
   async update(request, response) {
     const { id } = request.params;
