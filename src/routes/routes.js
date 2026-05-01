@@ -93,9 +93,10 @@ routes.get('/me', autenticarToken, async (req, res) => {
 // Rota /share
 routes.post('/share', autenticarToken, async (req, res) => {
   const usuarioId = req.usuario.id;
-  const urlPublica = `http://localhost:3333/public/${usuarioId}`;
+  const urlPublica = `${process.env.FRONTEND_URL || 'https://frontend-puce-ten-47.vercel.app'}/public/${usuarioId}`;
   res.json({ url: urlPublica });
 });
+
 
 // Rota /public/:id
 routes.get('/public/:id', async (req, res) => {
