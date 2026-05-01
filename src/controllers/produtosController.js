@@ -4,7 +4,9 @@ class ProdutosController {
   async index(request, response) {
     const { page = 1, limit = 5, artista } = request.query
 
-    let produtosQuery = connection('produtos').select('*')
+    let produtosQuery = connection('produtos')
+      .where({ user_id: request.userId })
+      .select('*')
 
     if (artista) {
       produtosQuery = produtosQuery.where('artista', 'like', `${artista}`)
@@ -15,7 +17,8 @@ class ProdutosController {
       .offset((page - 1) * limit)
 
     const [{ count }] = await connection('produtos')
-    .count('id as count')
+      .where({ user_id: request.userId })
+      .count('id as count')
 
     return response.json({
       total: count,
@@ -39,10 +42,11 @@ class ProdutosController {
     const [id] = await connection('produtos').insert({
       nome,
       artista,
-      preco
+      preco,
+      user_id: request.userId
     });
 
-    return response.json({ id, nome, artista, preco });
+    return response.json({ id });
   }
 
   async update(request, response) {
@@ -50,36 +54,40 @@ class ProdutosController {
     const { nome, artista, preco } = request.body;
 
     const produto = await connection('produtos')
-      .where('id', id).first();
+      .where({ id, user_id: request.userId })
+      .first();
 
     if (!produto) {
-      return response.status(400).json({ error: 'Produto não encontrado' });
+      return response.status(404).json({ error: 'Produto não encontrado' });
     }
 
     await connection('produtos')
-      .where('id', id)
+      .where({ id, user_id: request.userId })
       .update({
         nome,
         artista,
         preco
       })
 
-    return response.status(204).send();
+    return response.json({ sucess: true });
   }
 
   async delete(request, response) {
     const { id } = request.params;
 
     const produto = await connection('produtos')
-      .where('id', id).first();
+      .where({ id, user_id: request.userId })
+      .first();
 
     if (!produto) {
-      return response.status(400).json({ error: 'Produto não encontrado' });
+      return response.status(404).json({ error: 'Produto não encontrado' });
     }
 
-    await connection('produtos').where('id', id).delete();
+    await connection('produtos')
+      .where({ id, user_id: request.userId })
+      .delete();
 
-    return response.status(204).send();
+    return response.json({ sucess: true });
   }
 
 }
