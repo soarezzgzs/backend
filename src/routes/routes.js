@@ -18,22 +18,24 @@ routes.post('/register', async (req, res) => {
 
   try {
     const hash = await bcrypt.hash(senha, 8);
-    const [user] = await db('users')
-    .insert({ nome, email, senha: hash })
-    .returning(['id', 'email', 'nome']);
 
-    console.log('Usuário criado:', { id, email, nome }); // <-- log no servidor
+    const newUsers = await db('users')
+      .insert({ nome, email, senha: hash })
+      .returning(['id', 'email', 'nome']);
 
-    return res.status(201).json(user); // <-- status 201 explícito
+    const user = newUsers[0]; // pega o primeiro objeto retornado
+
+    console.log('Usuário criado:', user);
+
+    return res.status(201).json(user);
   } catch (err) {
-    console.error('Erro ao registrar:', err); // <-- log detalhado
+    console.error('Erro ao registrar:', err);
     if (err.code === '23505') {
       return res.status(400).json({ error: 'Email já cadastrado' });
     }
-    return res.status(500).json({ error: 'Erro no cadastro' });
+    return res.status(500).json({ error: 'Erro no cadastro', detalhe: err.message });
   }
 });
-
 
 routes.post('/login', async (req, res) => {
   const { email, senha } = req.body;
