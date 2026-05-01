@@ -5,6 +5,9 @@ const routes = Router();
 
 const produtosController = new ProdutosController();
 
+routes.get('/', (res, res) => {
+    res.send('API de Vinis rodando!')
+})
 routes.get('/vinis', produtosController.index);
 routes.post('/vinis', produtosController.create);
 routes.put('/vinis/:id', produtosController.update);
