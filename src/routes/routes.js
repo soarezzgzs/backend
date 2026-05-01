@@ -18,11 +18,13 @@ routes.post('/register', async (req, res) => {
 
   try {
     const hash = await bcrypt.hash(senha, 8);
-    const [id] = await db('users').insert({ nome, email, senha: hash });
+    const [user] = await db('users')
+    .insert({ nome, email, senha: hash })
+    .returning(['id', 'email', 'nome']);
 
     console.log('Usuário criado:', { id, email, nome }); // <-- log no servidor
 
-    return res.status(201).json({ id, email, nome }); // <-- status 201 explícito
+    return res.status(201).json(user); // <-- status 201 explícito
   } catch (err) {
     console.error('Erro ao registrar:', err); // <-- log detalhado
     if (err.code === '23505') {
